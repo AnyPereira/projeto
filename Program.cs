@@ -5,45 +5,36 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Configuration;
+using Dapper;
 
 namespace ConsoleApp2
 {
     class Program
     {
 
-        static void Main()
+        static string conn = ConfigurationManager.ConnectionStrings["conn"].ConnectionString;
+
+        private static void Main()
         {
-            SqlConnection conn = new SqlConnection("workstation id=anysantos.mssql.somee.com;packet size=4096;user id=anypsantos;pwd=@Legal2019;data source=anysantos.mssql.somee.com;persist security info=False;initial catalog=anysantos");
-                       
-            SqlDataReader dr = null;
-            try
-            {               
-                conn.Open();
-                SqlCommand cmd = new SqlCommand("select * from cliente", conn);
-                dr = cmd.ExecuteReader();
-                
-                while (dr.Read())
-                {
-                    Console.Write(dr[0]);
-                    Console.Write(dr[1]);
-                    Console.Write(dr[2]);
-                    Console.Write(dr[3]);
-                    Console.Write(dr[4]);
-                }
-                Console.ReadKey();
-            }
-            finally
+
+
+            SqlConnection conexaoBD = new SqlConnection(conn);
+            conexaoBD.Open();
+            var resultado = conexaoBD.Query("Select * from cliente");
+            Console.WriteLine("{0} - {1} - {2} - {3} - {4} ", "Código", "Nome", "Sobrenome", "Data_Nasc", "RG");
+            foreach (dynamic cliente in resultado)
             {
-                if (dr != null)
-                {
-                    dr.Close();
-                }
-                
-                if (conn != null)
-                {
-                    conn.Close();
-                }
+                Console.WriteLine("{0} - {1} - {2} - {3} - {4} ", cliente.clienteID, cliente.Nome, cliente.Sobrenome, cliente.Data_Nasc, cliente.RG);
             }
+            var resultadoEnd = conexaoBD.Query("Select * from endereco");
+            Console.WriteLine("{0} - {1} - {2} - {3} - {4} - {5}", "Código", "Código Cliente", "Logradouro", "Número", "Complemento", "Ponto de Referência");
+            foreach (dynamic endereco in resultadoEnd)
+            {
+                Console.WriteLine("{0} - {1} - {2} - {3} - {4} - {5}", endereco.enderecoId, endereco.clienteId, endereco.Logradouro, endereco.Numero, endereco.Complemento, endereco.Ponto_de_referencia);
+            }
+            Console.ReadKey();
+            conexaoBD.Close();
         }
     }
 }
